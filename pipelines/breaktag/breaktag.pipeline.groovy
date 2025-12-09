@@ -1,6 +1,6 @@
 PIPELINE="breaktag"
 PIPELINE_VERSION="1.0.0"
-PIPELINE_ROOT="./breaktag"
+PIPELINE_ROOT="."
 
 load PIPELINE_ROOT + "/pipelines/breaktag/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/breaktag/tools.groovy"
