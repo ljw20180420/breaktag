@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# 切换到当前脚本路径
+cd $( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# 查看物种基因组信息
+function get_accession()
+{
+    # 人: homo sapiens
+    # 小鼠: mus musculus
+    local taxon=$1
+    datasets summary genome taxon ${taxon} --assembly-source refseq --as-json-lines | dataformat tsv genome --fields accession,assminfo-name,organism-name | column -ts $'\t'
+}
+
+# 用分类名下载，会下载很多基因组
+function download_taxon()
+{
+    local taxon=$1
+    local filename=$2 # zip文件
+    datasets download genome taxon ${taxon} --filename ${filename}
+}
+
+
+# 用accession编号下载，保证每次下载的一样。
+function download_accession()
+{
+    local accession=$1
+    local filename=$2 # zip文件
+    until datasets download genome accession ${accession} --include genome,gtf,gff3 --filename ${filename}
+    do
+        datasets download genome accession ${accession} --include genome,gtf,gff3 --filename ${filename}
+    done
+    unzip ${filename} -d ${filename%.zip}
+}
+
+download_accession "GCF_000001405.40" "/home/ljw/sdc1/SRA_cache/human_dataset.zip"

@@ -1,0 +1,17 @@
+name: breaktag
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::bpipe
+  - bioconda::bedtools
+  - bioconda::bwa
+  - bioconda::fastqc
+  - bioconda::multiqc
+  - bioconda::samtools
+  - conda-forge::perl
+  - conda-forge::gawk
+  - conda-forge::python
+  - conda-forge::ncbi-datasets-cli
+  - bioconda::sra-tools

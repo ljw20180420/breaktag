@@ -5,12 +5,12 @@
 //
 
 // General parameters
-ESSENTIAL_PROJECT="/home/ssayolsp/tmp/test"
+ESSENTIAL_PROJECT="/home/ljw/new_fold/projects/roukoslab/breaktag/my_test"
 ESSENTIAL_SAMPLE_PREFIX="" 
 ESSENTIAL_THREADS=16
 
 // Mapping parameters
-ESSENTIAL_BWA_REF="/fsimb/common/genomes/homo_sapiens/ucsc/hg38/canonical/index/bwa/hg38.fa"
+ESSENTIAL_BWA_REF="/home/ljw/sdc1/SRA_cache/human_dataset/ncbi_dataset/data/GCF_000001405.40/GCF_000001405.40_GRCh38.p14_genomic.fna"
 ESSENTIAL_PAIRED="no"        // paired end design
 ESSENTIAL_QUALITY=60          // min mapping quality of reads to be kept. Defaults to 60
 
@@ -23,7 +23,7 @@ PROJECT=ESSENTIAL_PROJECT
 LOGS=PROJECT + "/logs"
 MAPPED=PROJECT + "/mapped"
 QC=PROJECT + "/qc"
-RAWDATA=PROJECT + "/rawdata"
+RAWDATA="/home/ljw/sdc1/roukos/sra"
 REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"
 TMP=PROJECT + "/tmp"
