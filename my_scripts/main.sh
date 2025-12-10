@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 切换到当前脚本路径
-cd $( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd $( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) 
 
 . ./dump_fastq.sh
 . ./download_genome.sh
@@ -20,6 +20,6 @@ cache_dir="${2:-"${CACHE_DIR}"}"
 
 # 运行pipeline.
 mkdir -p "${cache_dir}/test"
-cp ../pipelines/breaktag/target.txt "${cache_dir}/test"
-bpipe run "${cache_dir}/sra/SRR23241572.fastq.gz"
+cp ../pipelines/breaktag/targets.txt "${cache_dir}/test"
+bpipe run ../pipelines/breaktag/breaktag.pipeline.groovy "${cache_dir}/sra/SRR23241572.fastq.gz"
 
