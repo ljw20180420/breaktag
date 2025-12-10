@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# 切换到当前脚本路径
-cd $( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # 查看物种基因组信息
 function get_accession()
@@ -32,5 +30,3 @@ function download_accession()
     done
     unzip ${filename} -d ${filename%.zip}
 }
-
-download_accession "GCF_000001405.40" "/home/ljw/sdc1/SRA_cache/human_dataset.zip"

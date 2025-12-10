@@ -1,3 +1,3 @@
-.bpipe
-/essential.vars.groovy
-/targets.txt
+/.vscode
+/.bpipe
+/commandlog.txt
