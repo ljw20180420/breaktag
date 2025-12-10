@@ -15,3 +15,7 @@ dependencies:
   - conda-forge::python
   - conda-forge::ncbi-datasets-cli
   - bioconda::sra-tools
+  - pip
+  - pip:
+    - pandas
+    - bioframe
