@@ -20,18 +20,11 @@ cache_dir="${3:-"${CACHE_DIR}"}"
 # bwa index "${cache_dir}/human_dataset/ncbi_dataset/data/GCF_000001405.40/GCF_000001405.40_GRCh38.p14_genomic.fna"
 
 # # 下载suppl文件
-# while read accsession
-# do
-#     bedfile=$(
-#         curl https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM6995nnn/${accsession}/suppl/ |
-#         sed '$a </body></html>' |
-#         xq -m |
-#         xq -x /html/body/pre/a |
-#         grep ${accsession}
-#     )
-    
-#     wget -P ${cache_dir}/breaktag_raw_data/ https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM6995nnn/${accsession}/suppl/${bedfile}
-# done < GSE.txt
+# wget -c -O ${cache_dir}/breaktag_raw_data/GSE223772_RAW.tar "https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE223772&format=file"
+
+# # 下载metadata
+# wget -c -P ${cache_dir}/ https://ftp.ncbi.nlm.nih.gov/geo/series/GSE223nnn/GSE223772/matrix/GSE223772-GPL18573_series_matrix.txt.gz
+# wget -c -P ${cache_dir}/ https://ftp.ncbi.nlm.nih.gov/geo/series/GSE223nnn/GSE223772/matrix/GSE223772-GPL24676_series_matrix.txt.gz
 
 # # 运行pipeline.
 # mkdir -p "${cache_dir}/test"
