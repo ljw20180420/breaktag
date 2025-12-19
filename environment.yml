@@ -19,3 +19,5 @@ dependencies:
   - pip:
     - pandas
     - bioframe
+    - pysam
+    - biopython
