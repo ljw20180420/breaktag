@@ -177,9 +177,9 @@ def get_sense_sgRNA_pam(
         ).reverse_complement()
     ).upper()
 
-    sense_mismatches = (sgRNA_lib == np.array(list(sense_sgRNA))[None, :]).sum(axis=1)
+    sense_mismatches = (sgRNA_lib != np.array(list(sense_sgRNA))[None, :]).sum(axis=1)
     sense_min_idx = sense_mismatches.argmin()
-    antisense_mismatches = (sgRNA_lib == np.array(list(antisense_sgRNA))[None, :]).sum(
+    antisense_mismatches = (sgRNA_lib != np.array(list(antisense_sgRNA))[None, :]).sum(
         axis=1
     )
     antisense_min_idx = antisense_mismatches.argmin()
@@ -345,7 +345,6 @@ df_meta = (
     .replace("", np.nan)
     .dropna(axis=1, how="any")
 )
-df_meta.to_csv(CACHE_DIR / "meta.csv", index=False)
 
 df_sgRNA = collect_sgRNA(CACHE_DIR / "41587_2024_2238_MOESM3_ESM.xlsx")
 df_sgRNA.to_csv(CACHE_DIR / "sgRNA.csv", index=False)
@@ -355,6 +354,7 @@ df_meta = df_meta.assign(
         lambda row, df_sgRNA=df_sgRNA: get_sgRNA(row, df_sgRNA), axis=1
     )
 )
+df_meta.to_csv(CACHE_DIR / "meta.csv", index=False)
 
 genome = load_fasta(
     CACHE_DIR

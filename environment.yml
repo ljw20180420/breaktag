@@ -21,3 +21,4 @@ dependencies:
     - bioframe
     - pysam
     - biopython
+    - plotnine
