@@ -7,7 +7,6 @@ cd $( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 . ./download_genome.sh
 
 sra_acc_list="${1:-"SRA_ACCESSION_LIST_FILE.txt"}"
-gse_acc_list="${2:-"my_scripts/GSE.txt"}"
 cache_dir="${3:-"${CACHE_DIR}"}"
 
 # # 下载sra提取fastq并压缩.
