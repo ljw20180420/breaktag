@@ -5,13 +5,12 @@ import pathlib
 import sys
 from collections import OrderedDict
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from Bio import Seq
-from plotnine import aes, geom_raster, ggplot, scale_fill_gradient
+from plotnine import aes, geom_raster, ggplot, scale_fill_gradient2
 from roukos import load_fasta
-
-CACHE_DIR = pathlib.Path(os.environ["CACHE_DIR"])
 
 
 def get_context(row: pd.Series, genome: OrderedDict) -> str:
@@ -78,63 +77,71 @@ def context_agg(df: pd.DataFrame, ext: int) -> pd.DataFrame:
     x_columns = [str(x) for x in range(-ext, ext + 1)]
     df = (
         df
-        .groupby("context")[x_columns]
+        .assign(down=lambda df: df["strand"] == df["sense"])
+        .groupby(["context", "down"])[x_columns]
         .sum()
         .reset_index()
         .melt(
-            id_vars="context",
+            id_vars=["context", "down"],
             value_vars=x_columns,
             var_name="pos",
             value_name="count",
         )
         .astype({"pos": int})
         .assign(
-            dominant_pos=lambda df: df.groupby("context", group_keys=False).apply(
-                get_dominant_pos, include_groups=False
-            ),
-            dominant_count=lambda df: df.groupby("context", group_keys=False)[
+            dominant_pos=lambda df: df.groupby(
+                ["context", "down"], group_keys=False
+            ).apply(get_dominant_pos, include_groups=False),
+            dominant_count=lambda df: df.groupby(["context", "down"], group_keys=False)[
                 "count"
             ].transform("max"),
-            total_count=lambda df: df.groupby("context", group_keys=False)[
+            total_count=lambda df: df.groupby(["context", "down"], group_keys=False)[
                 "count"
             ].transform("sum"),
             dominant_ratio=lambda df: df["dominant_count"] / df["total_count"],
             ratio=lambda df: df["count"] / df["total_count"],
         )
-        .sort_values(
-            by=[
-                "dominant_pos",
-                "dominant_ratio",
-                "context",
-            ]
-        )
-        .reset_index(drop=True)
-        .assign(id=lambda df: pd.factorize(df["context"])[0])
     )
 
-    csv_file = CACHE_DIR / "result" / "context_agg" / f"{target_series}.csv"
-    csv_file.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(csv_file, index=False)
+    df_down = df.query("down").reset_index(drop=True)
+    df_up = df.query("not down").reset_index(drop=True)
+    for direc, df_direc in zip(["down", "up"], [df_down, df_up]):
+        df_direc = (
+            df_direc
+            .sort_values(
+                by=[
+                    "dominant_pos",
+                    "dominant_ratio",
+                    "context",
+                ]
+            )
+            .reset_index(drop=True)
+            .assign(id=lambda df: pd.factorize(df["context"])[0])
+        )
 
-    pdf_file = CACHE_DIR / "result" / "context_agg" / f"{target_series}.pdf"
-    pdf_file.parent.mkdir(parents=True, exist_ok=True)
-    color_max = np.percentile(df.loc[df["pos"] == 0, "ratio"], q=100)
-    (
-        ggplot(df, mapping=aes(x="pos", y="id", fill="ratio"))
-        + geom_raster(interpolate="nearest")
-        + scale_fill_gradient(low="#0000FF", high="#FF0000", limits=[0, color_max])
-    ).save(pdf_file)
+        csv_file = CACHE_DIR / "result" / "context_agg" / f"{target_series}_{direc}.csv"
+        csv_file.parent.mkdir(parents=True, exist_ok=True)
+        df_direc.to_csv(csv_file, index=False)
 
-    return df
+        pdf_file = CACHE_DIR / "result" / "context_agg" / f"{target_series}_{direc}.pdf"
+        pdf_file.parent.mkdir(parents=True, exist_ok=True)
+        color_max = np.percentile(df_direc.loc[df_direc["pos"] == 0, "ratio"], q=100)
+        (
+            ggplot(df_direc, mapping=aes(x="pos", y="id", fill="ratio"))
+            + geom_raster(interpolate="nearest")
+            + scale_fill_gradient2(
+                low="#0707D6",
+                mid="#FFFFFF",
+                high="#FF0000",
+                midpoint=color_max / 2,
+                limits=[0, color_max],
+            )
+        ).save(pdf_file)
+        plt.close("all")
 
 
-for target_series in [
-    "hiplex1",
-    "hiplex2",
-    "hiplex3",
-    "48sgrna",
-]:
+if __name__ == "__main__":
+    CACHE_DIR = pathlib.Path(os.environ["CACHE_DIR"])
+    target_series = "hiplex1"
     df = collect_data(target_series)
-    if df is None:
-        continue
-    df = context_agg(df, ext=17)
+    context_agg(df, ext=17)

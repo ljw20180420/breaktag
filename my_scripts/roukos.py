@@ -10,8 +10,6 @@ import numpy as np
 import pandas as pd
 from Bio import Seq
 
-CACHE_DIR = pathlib.Path(os.environ["CACHE_DIR"])
-
 
 def load_fasta(genomefile: os.PathLike) -> OrderedDict:
     genomefile = pathlib.Path(os.fspath(genomefile))
@@ -85,7 +83,7 @@ def get_sense_sgRNA_pam(
 
 def analyze_bed(
     target: os.PathLike,
-    nontarget: os.PathLike,
+    nontarget: os.PathLike | None,
     sgRNA_lib: np.ndarray,
     min_breaks: int,
     max_mismatch: int,
@@ -94,6 +92,9 @@ def analyze_bed(
 ) -> pd.DataFrame:
     breaks = {}
     for name, bedfile in zip(["target", "nontarget"], [target, nontarget]):
+        if bedfile is None:
+            breaks[name] = None
+            continue
         breaks[name] = (
             pd
             .read_csv(
@@ -142,18 +143,25 @@ def analyze_bed(
         )
     )
 
-    total_breaks = pd.concat([
-        breaks["target"].assign(
+    if breaks["nontarget"] is None:
+        total_breaks = breaks["target"].assign(
             start=lambda df: df["end"],
             end=lambda df: df["end"] + 1,
             tnt="target",
-        ),
-        breaks["nontarget"].assign(
-            start=lambda df: df["end"],
-            end=lambda df: df["end"] + 1,
-            tnt="nontarget",
-        ),
-    ])
+        )
+    else:
+        total_breaks = pd.concat([
+            breaks["target"].assign(
+                start=lambda df: df["end"],
+                end=lambda df: df["end"] + 1,
+                tnt="target",
+            ),
+            breaks["nontarget"].assign(
+                start=lambda df: df["end"],
+                end=lambda df: df["end"] + 1,
+                tnt="nontarget",
+            ),
+        ])
 
     offtarget = (
         bf
@@ -201,6 +209,7 @@ def analyze_bed(
 
 
 if __name__ == "__main__":
+    CACHE_DIR = pathlib.Path(os.environ["CACHE_DIR"])
     df_meta = pd.read_csv(CACHE_DIR / "meta.csv", header=0)
 
     genome = load_fasta(
@@ -212,6 +221,7 @@ if __name__ == "__main__":
         / "GCF_000001405.40_GRCh38.p14_genomic.fna"
     )
 
+    target_series = "hiplex1"
     min_breaks = 2
     ext = 17
     max_mismatch = 7
@@ -222,16 +232,18 @@ if __name__ == "__main__":
         df_meta["nontarget"],
         df_meta["sgRNA_lib"],
     ):
-        if nontarget == "unknown" or sgRNA_lib == "unknown":
+        if nontarget == "unknown" or sgRNA_lib == "unknown" or series != target_series:
             continue
 
         target = CACHE_DIR / "breaktag_raw_data" / target
         nontarget = CACHE_DIR / "breaktag_raw_data" / nontarget
-        breakpoint()
+
         sgRNA_lib = np.array([list(sgRNA) for sgRNA in sgRNA_lib.split(":")])
         offtarget = analyze_bed(
             target, nontarget, sgRNA_lib, min_breaks, max_mismatch, genome, ext
         )
-        offtarget.to_csv(
-            CACHE_DIR / "result" / f"{sample_title}.{series}.csv", index=False
-        )
+
+        csv_file = CACHE_DIR / "result" / f"{sample_title}.{series}.csv"
+        csv_file.parent.mkdir(parents=True, exist_ok=True)
+
+        offtarget.to_csv(csv_file, index=False)
