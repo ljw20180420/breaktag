@@ -127,7 +127,6 @@ def get_sgRNA(row: pd.Series, df_sgRNA: pd.DataFrame):
 
 def collect_sgRNA(excelfile: os.PathLike) -> pd.DataFrame:
     def merge_sgRNA(row: pd.Series):
-        breakpoint()
         return "".join(
             row[["Target sequence"] + [f"Unnamed: {i}" for i in range(2, 21)]]
         )
